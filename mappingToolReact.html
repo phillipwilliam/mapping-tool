@@ -527,223 +527,63 @@
     /* PREPARE THE DATA STRUCTURES FOR USE */
     const mappingCategoryTree = new MappingCategoryTree().create({mappingTree: mappingTemplateDev.tags});
     const formattedMappingTemplate = mappingCategoryTree.formatMainCategory();
-
-
-
 </script>
 
 <script type="text/babel">
-
-
-
-    const MappingUtility = ({orgDetails}) => {
-        /*
+    /*
         TODO:
         - Search functionality for mapping table
         - Hook up the category mapping dropdown and functionality
         - Action the automapping functionality
-        */
+    */
 
-        const accounts = orgDetails.accounts;
-
-        const [mappedAccounts, setMappedAccounts] = React.useState(accounts);
-
-        const [percentComplete, setPercentageComplete] = React.useState(0);
-
-        const [isMapped, setMappedState] = React.useState(() => {
-            if(!orgDetails.isMapped) {
-                document.body.addEventListener('autoMapProgress', function (event) {
-                    setPercentageComplete(event.detail + '%');
-
-                    if (event.detail === 100) {
-
-                        let autoMapPause = setTimeout(function () {
-                            orgDetails.isMapped = true;
-                            setMappedState(true);
-                            autoMapPause = clearTimeout(autoMapPause);
-                            return true;
-                        }, 1000);
-                    }
-                });
-
-                let autoMapResults = autoMapAccounts(orgDetails.accounts, mappingCategoryTree.flatMappingTemplate);
-
-                setMappedAccounts(autoMapResults.accounts);
-            } else {
-                return false;
-            }
-        });
-
-        let searchTerm = '';
-
-        const accountContainsSearchTerm = (account) => {
-            const propsToCheck = ['name', 'code', 'mainCategory', 'category'];
-            let propValue = '';
-            let matchFound = false;
-
-            propsToCheck.forEach(function (prop) {
-                propValue = (prop === 'category' ? account.category.label : account[prop]).toString().toLowerCase();
-
-                if (propValue.indexOf(searchTerm.toString().toLowerCase()) !== -1) {
-                    matchFound = true;
-                    return true;
-                }
-            });
-
-            return matchFound;
-        };
-
+    const MappingUtility = ({ accounts }) => {
+        const toggleAllChecked = React.useRef(false);
+        const [searchTerm, setSearchTerm] = React.useState('');
         const [mappedAccountsHidden, setMappedAccountsVisibility] = React.useState(false);
-
         const [archivedAccountsHidden, setArchivedAccountsVisibility] = React.useState(false);
+        const [checkedAccounts, setCheckedAccounts] = React.useState(accounts.reduce((list, account) => ({ ...list, [account.uid]: false }), {}));
 
-        const getVisibleAccounts = (mappedAccountsHidden, archivedAccountsHidden) => {
-            return mappedAccounts.reduce((accumulator, account) => {
-                let isVisible = (!account.isMapped || (account.isMapped && !mappedAccountsHidden)) && (!account.isArchived || (account.isArchived && !archivedAccountsHidden));
+        const accountContainsSearchTerm = ({ name, code, mainCategory, category: { label }}) => (
+            !searchTerm ? true : [name, code, mainCategory, label].find(item => item.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
 
-                if (searchTerm.trim() !== '' && isVisible) {
-                    isVisible = accountContainsSearchTerm(account);
-                }
-
-                if (isVisible) {
-                    accumulator.push(account);
-                }
-                return accumulator;
-            }, []);
-        };
-
-        const [visibleAccounts, setVisibleAccounts] = React.useState(getVisibleAccounts());
-
-        const defaultCheckedAccounts = accounts.reduce((accumulator, account) => {
-            return {
-                ...accumulator,
-                [account.uid]: false
-            }
-        }, {});
-
-        const [checkedAccounts, setCheckedAccounts] = React.useState(defaultCheckedAccounts);
-
-        function getCheckedAccounts () {
-            return Object.keys(checkedAccounts).filter(function (accountUid){
-                return checkedAccounts[accountUid];
-            })
-        }
-
-        let numberOfCheckedAccounts = getCheckedAccounts().length;
-
-        const updateCheckedAccount = uid => {
-            setCheckedAccounts(
-                {
-                    ...checkedAccounts,
-                    [uid]: !checkedAccounts[uid]
-                }
-            );
-            numberOfCheckedAccounts = getCheckedAccounts().length;
-        };
-
-        const updateVisibleAccounts = (mappedAccountsHidden, archivedAccountsHidden) => {
-            let currentVisibleAccounts = getVisibleAccounts(mappedAccountsHidden, archivedAccountsHidden);
-            setVisibleAccounts(currentVisibleAccounts);
-            setCheckedAccounts(
-                {
-                    ...defaultCheckedAccounts,
-                    ...visibleAccounts.reduce((accumulator, account) => {
-                        return {
-                            ...accumulator,
-                            [account.uid]: checkedAccounts[account.uid]
-                        }
-                    }, {})
-                }
-            );
-        };
-
-
-        const applyMappingCategory = (categoryUid) => {
-            //Apply to the checked accounts
-        };
-
-        const [allChecksToggleChecked, setAllChecksToggleState] = React.useState(false);
-
-        const toggleAllAccounts = () => {
-            setCheckedAccounts(
-                {
-                    ...defaultCheckedAccounts,
-                    ...visibleAccounts.reduce((accumulator, account) => {
-                        return {
-                            ...accumulator,
-                            [account.uid]: !allChecksToggleChecked
-                        }
-                    }, {})
-                }
-            );
-            setAllChecksToggleState(!allChecksToggleChecked);
-        };
-
-
-        const toggleMappedAccountsVisibility = () => {
-            console.log('pre setting mappedAccountsHidden', mappedAccountsHidden);
-            setMappedAccountsVisibility(!mappedAccountsHidden);
-            console.log('mappedAccountsHidden', mappedAccountsHidden);
-            updateVisibleAccounts(!mappedAccountsHidden, archivedAccountsHidden);
-        };
-
-
-        const toggleArchivedAccountsVisibility = () => {
-            setArchivedAccountsVisibility(!archivedAccountsHidden);
-            console.log('archivedAccountsHidden', archivedAccountsHidden);
-            updateVisibleAccounts(mappedAccountsHidden, !archivedAccountsHidden);
-        };
-
-        const applySearchTerm = (searchString) => {
-            searchTerm = searchString;
-            updateVisibleAccounts();
-        };
+        const visibleAccounts = () => accounts.filter(account => 
+            !(account.isMapped && mappedAccountsHidden) && !(account.isArchived && archivedAccountsHidden) && accountContainsSearchTerm(account)
+        );
 
         return (
             <div>
-                {isMapped ?
-                    <div>
-                        <CategoryToolbar applyMappingCategory={applyMappingCategory} numberOfCheckedAccounts={numberOfCheckedAccounts}></CategoryToolbar>
-                        <MappingTools archivedAccountsHidden={archivedAccountsHidden} mappedAccountsHidden={mappedAccountsHidden} applySearchTerm={applySearchTerm} toggleMappedAccountsVisibility={toggleMappedAccountsVisibility} toggleArchivedAccountsVisibility={toggleArchivedAccountsVisibility}></MappingTools>
-                        <MappingTable accounts={visibleAccounts} checkedAccounts={checkedAccounts} updateCheckedAccount={updateCheckedAccount} toggleAllAccounts={toggleAllAccounts}></MappingTable>
-                    </div>
-                    :
-                    <AutoMapTool percentComplete={percentComplete} orgDetails={orgDetails}></AutoMapTool>
-                }
+                <CategoryToolbar
+                    applyMappingCategory={applyMappingCategory}
+                    numberOfCheckedAccounts={visibleAccounts().filter(account => checkedAccounts[account.uid] === true ).length}
+                />
+                <MappingTools
+                    searchTerm={searchTerm}
+                    archivedAccountsHidden={archivedAccountsHidden}
+                    mappedAccountsHidden={mappedAccountsHidden}
+                    applySearchTerm={searchString => setSearchTerm(searchString)}
+                    toggleMappedAccountsVisibility={() => setMappedAccountsVisibility(!mappedAccountsHidden)}
+                    toggleArchivedAccountsVisibility={() => setArchivedAccountsVisibility(!archivedAccountsHidden)}
+                />
+                <MappingTable
+                    accounts={visibleAccounts()}
+                    checkedAccounts={checkedAccounts}
+                    updateCheckedAccount={(uid) => { setCheckedAccounts({ ...checkedAccounts, [uid]: !checkedAccounts[uid] }) }}
+                    toggleAllAccounts={() => {
+                        setCheckedAccounts(accounts.reduce((list, account) => ({ ...list, [account.uid]: !toggleAllChecked.current }), {}));
+                        toggleAllChecked.current = !toggleAllChecked.current;
+                    }}
+                />
             </div>
-        );
-    };
-
-    const AutoMapTool = ({percentComplete, orgDetails}) => {
-        return (
-            <div className="autoMap autoMapIntro autoMapProgress">
-                <h4>Automapping in progress. Please wait...</h4>
-                <p>Automap saves you time by automatically connecting your accounts to PwC categories or by suggesting categories that could be probable matches.</p>
-
-                <div className="progress">
-                    <div className="dataSourceDetails">
-                        <i role="presentation" tabIndex="-1" className="dataSourceIcon xero"></i>
-                        <h5>Vanderlay Industries</h5>
-                    </div>
-
-                    <div className="progressBar">
-                        <div className="progressAmount" style={{width: percentComplete}}></div>
-                        <span className="progressText">{percentComplete} Complete</span>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    let tabbedSearchInitialised = false;
+        )
+    }
 
     const CategoryToolbar = ({numberOfCheckedAccounts, applyMappingCategory}) => {
+
         React.useEffect(() => {
-            if(!tabbedSearchInitialised) {
-                const testTabbedSearch = new pwcTabbedMappingTreeControl(document.getElementById('mappingCategoryInput'), {'mappingTree': formattedMappingTemplate})
-                tabbedSearchInitialised = true;
-            }
-        });
+            const testTabbedSearch = new pwcTabbedMappingTreeControl(document.getElementById('mappingCategoryInput'), {'mappingTree': formattedMappingTemplate})
+        }, []);
 
         return (
             <div className="categoryToolbar">
@@ -752,12 +592,9 @@
                 <div className="mappingToolbar">
                     <label htmlFor="mappingCategoryInput">
                         {
-                            numberOfCheckedAccounts > 0 ?
-                                <span>
-                                    Account(s) selected <span className="numberCircle">{numberOfCheckedAccounts}</span>
-                                </span>
-                            :
-                                <span>No account(s) selected</span>
+                            numberOfCheckedAccounts > 0
+                                ? <span>Account(s) selected <span className="numberCircle">{numberOfCheckedAccounts}</span></span>
+                                : <span>No account(s) selected</span>
                         }
                         <span className="sr-only">Please select a category to map to these.</span>
                     </label>
@@ -773,34 +610,33 @@
         );
     };
 
-    const MappingTools = ({archivedAccountsHidden, mappedAccountsHidden, toggleMappedAccountsVisibility, toggleArchivedAccountsVisibility, applySearchTerm }) => {
-        return (
-            <div className="tableTools">
-                <div className="accountSearch">
-                    <i className="icon icon-appkit-search" role="presentation" tabIndex="-1" aria-hidden="true"></i>
-                    <label className="sr-only" htmlFor="accountSearchInput">
-                        Search by code, name, type or assigned category
-                    </label>
-                    <input onChange={e => applySearchTerm(e.target.value)} type="text" id="accountSearchInput" name="accountSearchInput" placeholder="Search by code, name, type or assigned category"/>
-                </div>
-
-                <div className="tableFilters">
-                    <label className="checkbox customCheckStyling simpleBorder">
-                        <input onChange={toggleArchivedAccountsVisibility} type="checkbox" defaultChecked={archivedAccountsHidden} name="hideArchived" id="hideArchived"/>
-                        <i className="checkstate icon icon-tick" role="presentation" tabIndex="-1" aria-hidden="true"></i>
-                        <span>Hide archived</span>
-                    </label>
-                    <label className="checkbox customCheckStyling simpleBorder">
-                        <input onChange={toggleMappedAccountsVisibility} type="checkbox" defaultChecked={mappedAccountsHidden} name="hideMapped" id="hideMapped"/>
-                        <i className="checkstate icon icon-tick" role="presentation" tabIndex="-1" aria-hidden="true"></i>
-                        <span>Hide mapped</span>
-                    </label>
-                </div>
+    const MappingTools = ({ searchTerm, archivedAccountsHidden, mappedAccountsHidden, toggleMappedAccountsVisibility, toggleArchivedAccountsVisibility, applySearchTerm }) => (
+        <div className="tableTools">
+            <div className="accountSearch">
+                <i className="icon icon-appkit-search" role="presentation" tabIndex="-1" aria-hidden="true"></i>
+                <label className="sr-only" htmlFor="accountSearchInput">
+                    Search by code, name, type or assigned category
+                </label>
+                <input onChange={e => applySearchTerm(e.target.value)} type="text" value={searchTerm} id="accountSearchInput" name="accountSearchInput" placeholder="Search by code, name, type or assigned category"/>
             </div>
-        );
-    };
+
+            <div className="tableFilters">
+                <label className="checkbox customCheckStyling simpleBorder">
+                    <input onChange={toggleArchivedAccountsVisibility} type="checkbox" defaultChecked={archivedAccountsHidden} name="hideArchived" id="hideArchived"/>
+                    <i className="checkstate icon icon-tick" role="presentation" tabIndex="-1" aria-hidden="true"></i>
+                    <span>Hide archived</span>
+                </label>
+                <label className="checkbox customCheckStyling simpleBorder">
+                    <input onChange={toggleMappedAccountsVisibility} type="checkbox" defaultChecked={mappedAccountsHidden} name="hideMapped" id="hideMapped"/>
+                    <i className="checkstate icon icon-tick" role="presentation" tabIndex="-1" aria-hidden="true"></i>
+                    <span>Hide mapped</span>
+                </label>
+            </div>
+        </div>
+    );
 
     const MappingTable = ({ accounts, checkedAccounts, updateCheckedAccount, toggleAllAccounts }) => {
+        const sortOrder = React.useRef(['mainCategory', 'name', 'code', 'category.label']);
 
         const [sortSettings, setSortSettings] = React.useState({
             'code': 'desc',
@@ -809,22 +645,23 @@
             'category.label': 'desc'
         });
 
-        const [sortOrder, setSortOrder] = React.useState(['mainCategory', 'name', 'code', 'category.label']);
-
         const [sortedAccounts, sortAccounts] = React.useState(performSort());
+
+        React.useEffect(() => {
+            sortAccounts(performSort());
+        }, [accounts]);
 
         function performSort () {
             return accounts.sort((a, b) => {
                 let i = 0, result = 0, direction, account1Compare, account2Compare;
-                while (i < sortOrder.length && result === 0) {
-                    direction = sortSettings[sortOrder[i]] === 'desc' ? 1 : -1;
-
-                    if(sortOrder[i] === 'category.label') {
+                while (i < sortOrder.current.length && result === 0) {
+                    direction = sortSettings[sortOrder.current[i]] === 'desc' ? 1 : -1;
+                    if(sortOrder.current[i] === 'category.label') {
                         account1Compare = a.category.label.toString().toLowerCase();
                         account2Compare = b.category.label.toString().toLowerCase();
                     }else {
-                        account1Compare = a[sortOrder[i]].toString().toLowerCase();
-                        account2Compare = b[sortOrder[i]].toString().toLowerCase();
+                        account1Compare = a[sortOrder.current[i]].toString().toLowerCase();
+                        account2Compare = b[sortOrder.current[i]].toString().toLowerCase();
                     }
 
                     result = direction * (account1Compare < account2Compare ? -1 : (account1Compare > account2Compare ? 1 : 0));
@@ -835,25 +672,17 @@
         }
 
         const sortTable = (sortType) => {
-            //setActiveSort(sortType);
-
             setSortSettings({
                 ...sortSettings,
                 [sortType]: sortSettings[sortType] === 'desc' ? 'asc' : 'desc'
             });
 
             //Change the sort order
-            let currentPosition = sortOrder.indexOf(sortType);
-            let newSortOrder = sortOrder.slice(0, currentPosition);
-            newSortOrder.unshift(sortType);
-            setSortOrder(newSortOrder);
+            let currentPosition = sortOrder.current.indexOf(sortType);
+            sortOrder.current.unshift(...sortOrder.current.splice(currentPosition, 1));
 
             sortAccounts(performSort());
         };
-
-        React.useEffect(() => {
-            sortAccounts(performSort());
-        });
 
         return (
             <div className="categoryMappingTable">
@@ -904,46 +733,70 @@
         )
     };
 
-    const MappingTableRow = ({account, updateCheck, checked}) => {
-        const checkboxId = account.uid + 'Check';
+    const MappingTableRow = ({ account, updateCheck, checked }) => (
+        <tr>
+            <th className="accountSelect">
+                <label className="checkbox customCheckStyling simpleBorder">
+                    <input onChange={() => updateCheck(account.uid)} type="checkbox" name={`${account.uid}Check`} id={`${account.uid}Check`} checked={checked}/>
+                    <i className="checkstate icon icon-tick" role="presentation" tabIndex="-1" aria-hidden="true"></i>
+                    <span className="sr-only">Select account {account.code} {account.name}</span>
+                </label>
+            </th>
 
-        return (
-            <tr>
-                <th className="accountSelect">
-                    <label className="checkbox customCheckStyling simpleBorder">
-                        <input onChange={() => updateCheck(account.uid)} type="checkbox" name={checkboxId} id={checkboxId} checked={checked}/>
-                        <i className="checkstate icon icon-tick" role="presentation" tabIndex="-1" aria-hidden="true"></i>
-                        <span className="sr-only">Select account {account.code} {account.name}</span>
-                    </label>
-                </th>
+            <td className="accountCode">
+                {account.code}
+            </td>
 
-                <td className="accountCode">
-                    {account.code}
+            <td className="accountName">
+                {account.name}
+            </td>
+
+            <td className="accountType">
+                <span className={'accountTypePill ' + account.mainCategory}>{account.mainCategory}</span>
+            </td>
+
+            { account.isMapped ?
+                <td className="accountMapping" title={account.category.label}>
+                    <span className={'accountTypePill ' + account.mainCategory}>{account.category.label}</span>
                 </td>
-
-                <td className="accountName">
-                    {account.name}
+                :
+                <td className="accountMapping">
+                    <span>Unassigned</span>
                 </td>
+            }
+        </tr>
+    );
 
-                <td className="accountType">
-                    <span className={'accountTypePill ' + account.mainCategory}>{account.mainCategory}</span>
-                </td>
+    const Loading = () => (
+        <div className="autoMap autoMapIntro autoMapProgress">
+            <h4>Automapping in progress. Please wait...</h4>
+            <p>Automap saves you time by automatically connecting your accounts to PwC categories or by suggesting categories that could be probable matches.</p>
 
-                {account.isMapped ?
-                    <td className="accountMapping" title={account.category.label}>
-                        <span className={'accountTypePill ' + account.mainCategory}>{account.category.label}</span>
-                    </td>
-                    :
-                    <td className="accountMapping">
-                        <span>Unassigned</span>
-                    </td>
-                }
-            </tr>
-        );
-    }
+            <div className="progress">
+                <div className="dataSourceDetails">
+                    <i role="presentation" tabIndex="-1" className="dataSourceIcon xero"></i>
+                    <h5>Vanderlay Industries</h5>
+                </div>
+            </div>
+        </div>
+    );
+
+    const MappingApp = ({ orgDetails }) => {
+        const [mappedAccounts, setMappedAccounts] = React.useState(null);
+        const [isMapped, setMappedState] = React.useState(false);
+
+        React.useEffect(() => {
+            autoMapAccounts(orgDetails.accounts, mappingCategoryTree).then(autoMapResults => {
+                setMappedAccounts(autoMapResults.accounts);
+                setMappedState(true);
+            });
+        }, []);
+
+        return isMapped ? <MappingUtility accounts={mappedAccounts} /> : <Loading />;
+    };
 
     ReactDOM.render(
-        <MappingUtility orgDetails={testOrganisation}/>,
+        <MappingApp orgDetails={testOrganisation}/>,
         document.getElementById('ReactMappingTable')
     );
 </script>
@@ -976,6 +829,5 @@ function applyMappingCategory () {
 
 
 </body>
-
 
 </html>
