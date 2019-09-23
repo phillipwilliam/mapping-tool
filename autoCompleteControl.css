@@ -1,0 +1,43 @@
+/* AUTOCOMPLETE CONTROL */
+.autoCompleteWrapper {
+    position: relative;
+}
+
+.autoCompleteWrapper .autoMapResults {
+    display: none;
+}
+
+.autoCompleteWrapper input {
+    margin-bottom: 0;
+    display: block;
+}
+
+.autoCompleteWrapper .autoCompleteResults {
+    float: left;
+    clear: both;
+    min-width: 300px;
+}
+
+.autoCompleteWrapper.open .autoCompleteResults {
+    display: block;
+    position: absolute;
+    top: 100%;
+}
+
+.autoCompleteWrapper .autoCompleteResults,
+.autoCompleteWrapper .autoCompleteResults .result {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+.autoCompleteWrapper .autoCompleteResults .result {
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+}
+
+.autoCompleteWrapper.open .autoCompleteResults .result.active {
+    background: #eee;
+}

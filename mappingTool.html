@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+
+<html class="fullpage">
+
+<head>
+    <title>Mapping screen V2</title>
+
+    <link id="libraryCss" rel="stylesheet" href="http://localhost:8000/library/dist/styles/library.min.css"/>
+    <link rel="stylesheet" href="http://localhost:8000/library/dist/styles/furniture/layout-fullpage-main.min.css"/>
+    <link rel="stylesheet" href="http://localhost:8000/library/dist/styles/themes/hexnub/hexnub.css"/>
+
+    <link rel="stylesheet" media="screen" href="/assets/hub/generic.css"/>
+    <link rel="stylesheet" media="screen" href="/assets/application.css"/>
+
+    <style>
+        body.mappingScreen {
+            background: #eee;
+            padding: 0 50px;
+            box-sizing: border-box;
+        }
+
+        .action-buttons {
+            text-align: right;
+        }
+
+        .dataSourceIcon {
+            background: no-repeat center;
+            background-size: contain;
+            height: 60px;
+            display: block;
+            margin: 20px auto 5px;
+        }
+
+        .xero {
+            background-image: url('/assets/xero.png');
+        }
+
+        .sage {
+            background-image: url('/assets/sageone.png');
+            transform: scale(0.7);
+        }
+
+        .aiq {
+            background-image: url('/assets/aiq.png');
+            transform: scale(0.9);
+        }
+
+        .qbo {
+            background-image: url('/assets/qbo.png');
+        }
+
+        .autoMap {
+            height: 300px;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        .autoMap .action-buttons {
+            position: absolute;
+            top: 300px;
+            right: 0;
+        }
+
+        .autoMapIntro {
+            background: url('/assets/auto-map.png') no-repeat center;
+        }
+
+        .autoMapProgress {
+
+        }
+
+        .dataSourceDetails {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .dataSourceDetails h5 {
+            font-weight: normal;
+            font-size: 15px;
+        }
+
+        /* PROGRESS BARS */
+        .progress {
+            margin: 40px 0;
+        }
+
+        .progressBar {
+            height: 50px;
+            line-height: 50px;
+            border: 1px solid #ccc;
+            position: relative;
+            background: #fff;
+        }
+
+        .progressBar .progressAmount {
+            background: #fc0;
+            margin: -1px;
+            box-sizing: content-box;
+            padding: 1px;
+            height: 50px;
+        }
+
+        .progressBar .progressText {
+            position: absolute;
+            bottom: -14px;
+            right: 0;
+            font-size: 11px;
+            line-height: 11px;
+        }
+
+        .autoMapMessage.message.icon_left {
+            position: relative;
+            padding: 30px 150px 30px 75px;
+            background: #fff;
+        }
+
+        .autoMapMessage.message.icon_left i {
+            font-size: 36px;
+            color: #cd0a0a;
+            position: absolute;
+            left: 20px;
+            top: 30px;
+        }
+
+        .autoMapMessage .action-buttons {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            margin-top: -22px;
+        }
+    </style>
+
+</head>
+
+<body class="mappingScreen Xmodal-open">
+
+<div class="pagecontainer">
+    <div class="holder noFurniture">
+        <div class="scroller relative">
+
+            <h3>Review and complete your account mapping</h3>
+
+            <auto-map-tool>
+                <div class="message icon_left autoMapMessage">
+                    <i class="icon icon-appkit-circle_information" role="presentation" tabindex="-1" aria-hidden="true"></i>
+
+                    <div class="content">
+                        <h4>Run automapping to save time?</h4>
+                        <p>Automap saves you time by automatically assigning your accounts to PwC categories or suggesting categories that could be probable matches. This can be run at any time.</p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="button" class="button action-primary">Try automap</button>
+                    </div>
+                </div>
+
+                <!-- AUTOMAP MODAL -->
+                <div id="autoMapModal">
+                    <div class="modal medium open">
+                        <div class="modal-content">
+                            <span class="sr-only modalStart" tabindex="-1">Start of popup. You can use esc key to close this popup at any time.</span>
+                            <button type="button" class="button button-icon-only modal-close">
+                                <i role="presentation" title="Close modal" aria-hidden="true" class="icon icon-appkit-close"></i>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+
+                            <div class="content">
+                                <div class="autoMap autoMapIntro">
+                                    <h4>Try automap?</h4>
+                                    <p>Automap saves you time by automatically connecting your accounts to PwC categories or by suggesting categories that could be probable matches.</p>
+
+                                    <div class="action-buttons">
+                                        <button type="button" class="button outline">Skip automap</button>
+                                        <button type="button" class="button action-primary">Try automap</button>
+                                    </div>
+                                </div>
+
+                                <div class="autoMap autoMapProgress">
+                                    <h4>Automapping in progress</h4>
+
+                                    <div class="progress">
+                                        <div class="dataSourceDetails">
+                                            <i role="presentation" tabindex="-1" class="dataSourceIcon xero"></i>
+                                            <h5>Vanderlay Industries</h5>
+                                        </div>
+
+                                        <div class="progressBar">
+                                            <div class="progressAmount" style="width: 45%"></div>
+                                            <span class="progressText">45% Complete</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="action-buttons">
+                                        <button type="button" class="button outline">Cancel</button>
+                                        <!-- SHOWS WHEN COMPLETE -->
+                                        <button type="button" class="button action-primary">Done</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="sr-only modalEnd" tabindex="-1">End of popup. You can use esc key to close this popup at any time.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    .autoMapResults {
+                        display: flex;
+                        flex-direction: row;
+                        flex-wrap: nowrap;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+
+                    .autoMapResults .progress {
+                        flex-basis: 75%;
+                        margin: 0;
+                    }
+
+                    .autoMapResults .resultsSummary {
+                        line-height: 50px;
+                        white-space: nowrap;
+                        padding-left: 20px;
+                        margin: 0;
+                    }
+
+                    .categoryToolbar {
+                        margin: 40px 0 5px;
+                    }
+
+                    .mappingToolbar {
+                        background: #fff;
+                        padding: 20px;
+                        display: flex;
+                        align-items: center;
+                        flex-flow: row nowrap;
+                    }
+
+                    .mappingToolbar label {
+                        position: relative;
+                        padding-right: 50px;
+                        line-height: 44px;
+                    }
+
+                    .mappingToolbar .statusMessage {
+                        display: inline-block;
+                        margin-left: 20px;
+                        line-height: 44px;
+                        font-size: 13px;
+                        display: inline-flex;
+                        justify-content: flex-end;
+                        align-items: center;
+                    }
+
+                    .mappingToolbar .statusMessage i {
+                        font-size: 24px;
+                        display: inline-block;
+                        margin-right: 5px;
+                    }
+
+                    .mappingTreeWrapper {
+                        position: relative;
+                        z-index: 10;
+                        width: 420px;
+                        float: left;
+                        margin: 0 20px;
+                        flex: 1;
+                    }
+
+                    .mappingTreeWrapper input {
+                        padding-right: 30px;
+                        width: 100%;
+                        box-sizing: border-box;
+                        background: transparent;
+                        z-index: 2;
+                        position: relative;
+                        cursor: pointer;
+                        border-radius: 0;
+                        margin: 0;
+                    }
+
+                    .mappingTreeWrapper .tabbedMappingTreeResults {
+                        height: 0;
+                        opacity: 0;
+                        overflow: hidden;
+                        position: absolute;
+                        transition: all ease 1s;
+                        width: 100%;
+                        top: 44px;
+                        left: 0;
+                        box-sizing: border-box;
+                    }
+
+                    .mappingTreeWrapper.open .tabbedMappingTreeResults {
+                        height: auto;
+                        overflow: visible;
+                        opacity: 1;
+                    }
+
+                    .mappingTreeWrapper ul,
+                    .mappingTreeWrapper li {
+                        list-style-type: none;
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    .mappingTreeWrapper .treeItem {
+                        height: 45px;
+                        line-height: 43px;
+                        border-bottom: 1px solid #E2E2E3;
+                        box-sizing: border-box;
+                        position: relative;
+                        cursor: pointer;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    .mappingTreeWrapper:after,
+                    .mappingTreeWrapper li:before,
+                    .mappingTreeWrapper .treeItem:before,
+                    .mappingTreeWrapper .treeItem:after {
+                        content: '';
+                        position: absolute;
+                    }
+
+                    /* Chevron pointing down */
+                    .mappingTreeWrapper:after,
+                    .mappingTreeWrapper .accordion > .treeItem:after {
+                        width: 8px;
+                        height: 8px;
+                        border: 2px solid #999;
+                        border-left: none;
+                        border-bottom: none;
+                        transform: rotate(135deg);
+                        right: 20px;
+                        top: 14px;
+                        display: block;
+                        z-index: 1;
+                    }
+
+                    .mappingTreeWrapper .accordion > .treeItem + ul {
+                        display: none;
+                    }
+
+                    .mappingTreeWrapper .accordion > .treeItem.active + ul {
+                        display: block;
+                    }
+
+                    .mappingTreeWrapper .level_0 .treeItem:before {
+                        left: 0;
+                        top: 0;
+                        bottom: 0;
+                        width: 5px;
+                    }
+
+                    /* Chevron pointing up */
+                    .mappingTreeWrapper.open:after,
+                    .mappingTreeWrapper .treeItem.active:after {
+                        transform: rotate(-45deg);
+                        top: 18px;
+                    }
+
+                    .mappingTreeWrapper li.accordion {
+                        background: #F2F2F2;
+                    }
+
+                    .mappingTreeWrapper li.leaf {
+                        background: #fff;
+                    }
+
+                    .mappingTreeWrapper li .treeItem {
+                        float: none;
+                        clear: both;
+                        display: block;
+                        padding: 0 30px;
+                    }
+
+                    .mappingTreeWrapper li .treeItem.selected {
+                        font-weight: bold;
+                    }
+
+                    .mappingTreeWrapper ul.level_0 li .treeItem {
+                        padding: 0 40px;
+                    }
+
+                    .mappingTreeWrapper ul.level_1 li .treeItem {
+                        padding: 0 50px;
+                    }
+
+                    .mappingTreeWrapper ul.level_2 li .treeItem {
+                        padding: 0 60px;
+                    }
+
+                    .assets.tab > .treeItem.active {
+                        background: #1D62BA;
+                        color: #fff;
+                    }
+
+                    /* Chevron pointing left */
+                    .tab > .treeItem.active:before {
+                        right: auto;
+                        left: 15px;
+                        transform: rotate(-45deg);
+                        top: 16px;
+                    }
+
+                    .assets.tab > .treeItem.active:before {
+                        border: 2px solid #fff;
+                        border-width: 2px 0 0 2px;
+                        width: 8px;
+                        height: 8px;
+                    }
+
+                    .assets.tab > .treeItem.active:after {
+                        display: none;
+                    }
+
+                    .assets.tab.active .level_1 .treeItem:before {
+                        background: #1D62BA;
+                    }
+
+                    .assets.tab.active .level_2 .treeItem:before {
+                        display: none;
+                    }
+
+                    .mappingTreeWrapper li.hide {
+                        display: none;
+                    }
+
+                    .numberCircle {
+                        border-radius: 100%;
+                        width: 32px;
+                        height: 32px;
+                        display: block;
+                        position: absolute;
+                        right: 5px;
+                        text-align: center;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                        box-sizing: border-box;
+                        padding: 5px;
+                        top: 6px;
+                        line-height: 20px;
+                        border: 2px solid #000;
+                    }
+
+
+
+                </style>
+
+                <!-- AUTOMAP RESULTS -->
+                <div class="autoMapResults">
+                    <div class="progress">
+                        <div class="progressBar">
+                            <div class="progressAmount" style="width: 45%"></div>
+                            <span class="progressText">45% Complete</span>
+                        </div>
+                    </div>
+
+                    <p class="resultsSummary">
+                        <strong>120 / 240 accounts</strong> mapped
+                    </p>
+                </div>
+            </auto-map-tool>
+
+            <!-- CATEGORY TOOLBAR -->
+            <div class="categoryToolbar">
+                <p>Select account(s) below and assign them to a PwC category.</p>
+
+                <div class="mappingToolbar">
+                    <label for="mappingCategoryInput">Account(s) selected: <span class="numberCircle">1</span> <span class="sr-only">Please select a category to map to these.</span></label>
+                    <input placeholder="Search or select PwC category" type="text" id="mappingCategoryInput" name="testTabbedSearch">
+                    <button onclick="applyMappingCategory()" type="button" class="button">Map to category</button>
+
+                    <span class="statusMessage">
+                        <i class="icon icon-appkit-circle_checkmark" role="presentation" tabindex="-1" aria-hidden="true"></i>
+                        All changes saved
+                    </span>
+                </div>
+            </div>
+
+            <style>
+                .tableTools {
+                    display: flex;
+                    flex-flow: row nowrap;
+                    justify-content: space-between;
+                    align-items: center;
+                    align-content: center;
+                }
+
+                .tableTools .accountSearch {
+                    background: #fff;
+                    position: relative;
+                    z-index: 5;
+                    flex: 2;
+                    display: inline-flex;
+                    align-items: center;
+                }
+
+                .tableTools .accountSearch i {
+                    position: absolute;
+                    z-index: 1;
+                    left: 15px;
+                    font-size: 18px;
+                }
+
+                .tableTools .accountSearch input {
+                    border: none;
+                    padding-left: 50px;
+                    background: none;
+                    position: relative;
+                    z-index: 2;
+                    margin: 0;
+                    box-sizing: border-box;
+                    width: 100%;
+                    height: 55px;
+                }
+
+                .tableTools .tableFilters {
+                    flex: 1;
+                    display: inline-flex;
+                    justify-content: flex-end;
+                }
+
+                .tableTools .tableFilters label {
+                    display: inline-block;
+                }
+
+                .mappingScreen label.checkbox.customCheckStyling.simpleBorder .checkstate {
+                    border: 2px solid currentColor;
+                    border-radius: 3px;
+                    width: 15px;
+                    height: 15px;
+                    line-height: 15px;
+                    box-shadow: none;
+                }
+
+                .tableTools .tableFilters label.checkbox.customCheckStyling.simpleBorder .checkstate {
+                    left: 6px;
+                    top: 13px;
+                }
+
+                .categoryMappingTable label.checkbox.customCheckStyling.simpleBorder .checkstate {
+                    left: 50%;
+                    margin: -10px;
+                    top: 50%;
+                }
+
+                .categoryMappingTable table {
+                    width: 100%;
+                    border: none;
+                    margin-top: 5px;
+                }
+
+                .categoryMappingTable .accountSelect {
+                    width: 75px;
+                }
+
+                .categoryMappingTable .accountCode,
+                .categoryMappingTable .accountCode button,
+                .categoryMappingTable .accountName,
+                .categoryMappingTable .accountName button {
+                    text-align: left;
+                }
+
+                .categoryMappingTable td.accountMapping {
+                    text-align: center;
+                    color: #aaa;
+                }
+
+                .categoryMappingTable thead th {
+                    background: #000;
+                    color: #fff;
+                    height: 50px;
+                }
+
+                .categoryMappingTable tbody th,
+                .categoryMappingTable tbody td {
+                    border-top: 5px solid #eee;
+                    height: 50px;
+                    background: #fff;
+                }
+
+                .categoryMappingTable thead th button {
+                    background: none;
+                    color: currentColor;
+                    font-weight: bold;
+                    padding: 0;
+                }
+
+                .categoryMappingTable thead th button.sort:after {
+                    content: '';
+                    display: inline-block;
+                    width: 0;
+                    height: 0;
+                    border: 5px solid transparent;
+                    border-top: 5px solid currentColor;
+                    border-bottom: none;
+                    margin: 2px 0 2px 10px;
+                }
+
+                .categoryMappingTable thead th button.sort.sorted-asc:after {
+                    border-bottom: 5px solid currentColor;
+                    border-top: none;
+                }
+
+                .accountTypePill {
+                    width: 120px;
+                    height: 32px;
+                    line-height: 32px;
+                    border-radius: 30px;
+                    box-sizing: border-box;
+                    color: #fff;
+                    display: block;
+                    text-align: center;
+                    margin: 0 auto;
+                    padding: 0 30px;
+                }
+
+                .accountMapping .accountTypePill {
+                    width: auto;
+                    display: inline-block;
+                }
+
+                .accountTypePill.assets {
+                    background: #2375dd;
+                }
+
+                .accountTypePill.liabilities {
+                    background: #30A189;
+                }
+
+                .accountTypePill.equity {
+                    background: #e0301e;
+                }
+
+                .accountTypePill.expenses {
+                    background: #e0301e;
+                }
+
+                .accountTypePill.revenue {
+                    background: #30A189;
+                }
+
+
+            </style>
+
+            <div class="tableTools">
+                <div class="accountSearch">
+                    <i class="icon icon-appkit-search" role="presentation" tabindex="-1" aria-hidden="true"></i>
+                    <label class="sr-only" for="accountSearchInput">
+                        Search by code, name, type or assigned category
+                    </label>
+                    <input type="text" id="accountSearchInput" name="accountSearchInput" placeholder="Search by code, name, type or assigned category"/>
+                </div>
+
+                <div class="tableFilters">
+                    <label class="checkbox customCheckStyling simpleBorder">
+                        <input type="checkbox" name="hideArchived" id="hideArchived"/>
+                        <i class="checkstate icon icon-tick" role="presentation" tabindex="-1" aria-hidden="true"></i>
+                        <span>Hide archived</span>
+                    </label>
+                    <label class="checkbox customCheckStyling simpleBorder">
+                        <input type="checkbox" name="hideMapped" id="hideMapped"/>
+                        <i class="checkstate icon icon-tick" role="presentation" tabindex="-1" aria-hidden="true"></i>
+                        <span>Hide mapped</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="categoryMappingTable">
+                <table cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr>
+                            <th class="accountSelect">
+                                <label class="checkbox customCheckStyling simpleBorder">
+                                    <input type="checkbox" name="selectAllAccounts" id="selectAllAccounts"/>
+                                    <i class="checkstate icon icon-tick" role="presentation" tabindex="-1" aria-hidden="true"></i>
+                                    <span class="sr-only">Select all accounts</span>
+                                </label>
+                            </th>
+
+                            <th class="accountCode">
+                                <button type="button" class="button sort sorted-desc">
+                                    <span>Code</span>
+                                </button>
+                            </th>
+
+                            <th class="accountName">
+                                <button type="button" class="button sort sorted-asc">
+                                    <span>Account name</span>
+                                </button>
+                            </th>
+
+                            <th class="accountType">
+                                <button type="button" class="button sort sorted-desc">
+                                    <span>Type</span>
+                                </button>
+                            </th>
+
+                            <th class="accountMapping">
+                                <button type="button" class="button sort sorted-desc">
+                                    <span>Assigned category</span>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <th class="accountSelect">
+                            <label class="checkbox customCheckStyling simpleBorder">
+                                <input type="checkbox" name="account090Check" id="account090Check"/>
+                                <i class="checkstate icon icon-tick" role="presentation" tabindex="-1" aria-hidden="true"></i>
+                                <span class="sr-only">Select account 090 Business bank account</span>
+                            </label>
+                        </th>
+
+                        <td class="accountCode">
+                            090
+                        </td>
+
+                        <td class="accountName">
+                            Business bank account
+                        </td>
+
+                        <td class="accountType">
+                            <span class="accountTypePill assets">Asset</span>
+                        </td>
+
+                        <td class="accountMapping">
+                            <span class="accountTypePill assets">Cash at bank</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th class="accountSelect">
+                            <label class="checkbox customCheckStyling simpleBorder">
+                                <input type="checkbox" name="account090Check" id="account091Check"/>
+                                <i class="checkstate icon icon-tick" role="presentation" tabindex="-1" aria-hidden="true"></i>
+                                <span class="sr-only">Select account 090 Business bank account</span>
+                            </label>
+                        </th>
+
+                        <td class="accountCode">
+                            091
+                        </td>
+
+                        <td class="accountName">
+                            Business transaction account
+                        </td>
+
+                        <td class="accountType">
+                            <span class="accountTypePill assets">Asset</span>
+                        </td>
+
+                        <td class="accountMapping">
+                            <span>Unassigned</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <h2>TODO: LIST</h2>
+            <ul>
+                <li>Make bulk mapping endpoint</li>
+                <li>Make copy/paste mapping functionality</li>
+            </ul>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+
+<script src="mappingTemplateDev.js"></script>
+<script src="pwcTabbedMappingControl.js"></script>
+<script src="autoMappingDefinitions.js"></script>
+<script src="autoMappingUtility.js"></script>
+<script src="collectionOfAccountLists.js"></script>
+
+
+
+<script src="MappingCategoryTree.js"></script>
+
+<script>
+
+
+
+var mappingCategoryTree = new MappingCategoryTree().create({mappingTree: mappingTemplateDev.tags});
+var formattedMappingTemplate = mappingCategoryTree.formatMainCategory();
+
+var testTabbedSearch = new pwcTabbedMappingTreeControl(document.getElementById('mappingCategoryInput'), {'mappingTree': formattedMappingTemplate})
+
+
+
+function applyMappingCategory () {
+    var inputCategoryData = document.getElementById('mappingCategoryInput').dataset.category,
+        chosenMappingCategory = inputCategoryData ? JSON.parse(inputCategoryData) : null;
+
+    console.log(chosenMappingCategory);
+}
+
+var singleTests = 0;
+var singleCategory = 1;
+var currentCategory = 'liabilities';
+
+var testAccounts = [
+    // {
+    //     "name": "Bank Account ($)",
+    //     "classification": "ASSET"
+    // },
+    // {
+    //     "name": "Fixtures and Fittings - cost b/fwd",
+    //     "classification": "ASSET"
+    // },
+    // {
+    //     "name": "Fixtures and Fittings - depn b/fwd",
+    //     "classification": "ASSET"
+    // },
+    {
+        "name": "Computer Equipment- cost b/fwd",
+        "classification": "ASSET"
+    }
+];
+
+if(singleTests) {
+    autoMapAccounts(testAccounts, mappingCategoryTree.flatMappingTemplate);
+} else {
+    for (var a = 0; a < collectionOfAccountLists.length; a++) {
+        autoMapAccounts(collectionOfAccountLists[a], mappingCategoryTree.flatMappingTemplate);
+    }
+}
+
+
+</script>
+
+
+</body>
+
+
+</html>
