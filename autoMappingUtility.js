@@ -1,4 +1,4 @@
-function autoMapAccounts (accountList, flatMappingTemplate) {
+function autoMapAccounts (accountList, mappingCategoryTree) {
     //Start by searching the known accounts list in autoMappingDefinition
     //If no match is found look for matches inside the flatMappingTemplate
     //QUESTIONS:
@@ -184,6 +184,7 @@ function autoMapAccounts (accountList, flatMappingTemplate) {
     }
 
     function matchingCategories (accountDefinition, accountName, useSimpleSearch) {
+        const flatMappingTemplate = mappingCategoryTree.flatMappingTemplate;
         let accountCategory = mappingCategoryTree.standardiseMainCategory(accountDefinition.classification),
             autoMappingDefinitionMatches = useSimpleSearch ? simpleKeyFilter(autoMappingDefinitions, accountName, accountCategory) : complexKeyFilter(autoMappingDefinitions, accountName, accountCategory),
             flatMappingTemplateMatches = useSimpleSearch ? simpleKeyFilter(flatMappingTemplate, accountName, accountCategory) : complexKeyFilter(flatMappingTemplate, accountName, accountCategory),
@@ -318,25 +319,14 @@ function autoMapAccounts (accountList, flatMappingTemplate) {
         }
     }
 
-    let fivePercentInterval = parseInt(accountList.length/20, 10);
-    let progressPercent = 0;
-    let progressEvent;
-
-    for (var a = 0; a < accountList.length; a++) {
-        autoMapAccount(accountList[a]);
-        if(a % fivePercentInterval === 0) {
-            progressPercent = a / fivePercentInterval * 5;
-
-            if(progressPercent <= 100) {
-                progressEvent = new CustomEvent('autoMapProgress', {detail: progressPercent});
-                document.body.dispatchEvent(progressEvent);
-            }
+    return new Promise(function(resolve) {
+        for (var a = 0; a < accountList.length; a++) {
+            autoMapAccount(accountList[a]);
         }
-    }
-
-    return {
-        matchSummary: matchSummary,
-        noMatches: noMatches,
-        accounts: accountList
-    };
+        resolve({
+            matchSummary: matchSummary,
+            noMatches: noMatches,
+            accounts: accountList
+        });
+    });
 }
